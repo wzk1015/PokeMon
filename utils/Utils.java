@@ -1,10 +1,12 @@
 package utils;
 
-import java.util.Collection;
+import java.util.*;
 
 public class Utils {
+    private static final Random random = new Random();
+
     public static <T> boolean contains(Collection<T> lst, T item) {
-        for (T obj: lst) {
+        for (T obj : lst) {
             if (obj == item) {
                 return true;
             }
@@ -14,9 +16,13 @@ public class Utils {
 
     public static void assertion(boolean statement, String msg) {
         if (!statement) {
-            IO.println("Assertion failed: ", msg);
-            exit(-1);
+            raise("Assertion failed" + msg);
         }
+    }
+
+    public static void raise(String msg) {
+        IO.println(msg);
+        exit(-1);
     }
 
     public static void exit(int code) {
@@ -26,5 +32,18 @@ public class Utils {
 
     public static void exit() {
         exit(0);
+    }
+
+    public static double random() {
+        return Math.random();
+    }
+
+    public static int randint(int min, int max) {
+        return random.nextInt(max - min + 1) + min;
+    }
+
+    public static <E> E choice(ArrayList<E> choices) {
+        Random random = new Random();
+        return choices.get(randint(0, choices.size() - 1));
     }
 }
