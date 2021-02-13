@@ -2,6 +2,8 @@ package moves;
 
 import java.util.List;
 
+//特定精灵的技能表（可学习的技能及相应等级）
+
 public class MoveTable {
     private final List<Integer> levels;
     private final List<Move> moves;

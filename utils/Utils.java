@@ -2,6 +2,8 @@ package utils;
 
 import java.util.*;
 
+//工具类：数据结构的常用方法，断言、异常、退出，随机数相关
+
 public class Utils {
     private static final Random random = new Random();
 

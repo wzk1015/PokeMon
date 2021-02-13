@@ -5,6 +5,8 @@ import utils.Utils;
 import java.util.ArrayList;
 import java.util.List;
 
+//特定精灵的进化链（可进化的目标及相应等级）
+
 public class EvolutionChain {
     private final List<Integer> levels;
     private final List<PokemonSpecies> species;
@@ -19,7 +21,7 @@ public class EvolutionChain {
     }
 
     public PokemonSpecies nextEvolution(int curLevel) {
-        assert canEvolve(curLevel);
+        Utils.assertion(canEvolve(curLevel), "cannot evolve");
         levels.remove(0);
         PokemonSpecies ret = species.get(0);
         species.remove(0);

@@ -6,6 +6,8 @@ import types.TypeTable;
 import utils.IO;
 import utils.Utils;
 
+//技能
+
 public class Move {
     public Pokemon master;
     public String name;

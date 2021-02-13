@@ -2,6 +2,8 @@ package utils;
 
 import java.util.Scanner;
 
+//输入输出管理类
+
 public class IO {
     public static final Scanner sn = new Scanner(System.in);
 

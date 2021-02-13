@@ -1,5 +1,7 @@
 package types;
 
+//属性
+
 public enum Type {
     normal,
     fight,

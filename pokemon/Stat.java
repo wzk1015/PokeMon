@@ -1,16 +1,36 @@
 package pokemon;
 
-public class Stat {
-    public int HP;
-    public int attack;
-    public int spAttack;
-    public int defense;
-    public int spDefense;
-    public int speed;
+//能力结构体
 
-    public int getByEnum(StatType type) {
+public class Stat {
+    public double maxHP;
+    public double attack;
+    public double spAttack;
+    public double defense;
+    public double spDefense;
+    public double speed;
+
+    public Stat(int maxHP, int attack, int spAttack, int defense, int spDefense, int speed) {
+        this.maxHP = maxHP;
+        this.attack = attack;
+        this.spAttack = spAttack;
+        this.defense = defense;
+        this.spDefense = spDefense;
+        this.speed = speed;
+    }
+
+    public Stat(double constant) {
+        this.maxHP = constant;
+        this.attack = constant;
+        this.spAttack = constant;
+        this.defense = constant;
+        this.spDefense = constant;
+        this.speed = constant;
+    }
+
+    public double getByEnum(StatType type) {
         switch (type) {
-            case HP: return HP;
+            case maxHP: return maxHP;
             case attack: return attack;
             case spAttack: return spAttack;
             case defense: return defense;
@@ -21,9 +41,9 @@ public class Stat {
         return -1;
     }
 
-    public int setByEnum(StatType type, int value) {
+    public double setByEnum(StatType type, double value) {
         switch (type) {
-            case HP: HP = value;
+            case maxHP: maxHP = value;
             case attack: attack = value;
             case spAttack: spAttack = value;
             case defense: defense = value;

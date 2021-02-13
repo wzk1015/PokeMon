@@ -6,6 +6,7 @@ import java.util.*;
 
 import static types.Type.*;
 
+//属性表，查询属性克制倍数
 
 public class TypeTable {
     public static HashMap<Type, List<Type>> effective = new HashMap<Type, List<Type>>() {

@@ -7,6 +7,7 @@ import java.util.List;
 import static pokemon.Character.*;
 import static pokemon.StatType.*;
 
+//性格表，查询增减的能力
 
 public class CharacterTable {
     public static HashMap<Character, StatType> add = new HashMap<Character, StatType>() {

@@ -8,6 +8,11 @@ public class WildBattle {
     public Player player;
     public Pokemon wild;
 
+    public WildBattle(Player p, Pokemon w) {
+        player = p;
+        wild = w;
+    }
+
     public boolean run() {
         while (player.isAlive() && wild.isAlive()) {
             PlayerDecision pd = player.takeTurn(true);
@@ -32,6 +37,12 @@ public class WildBattle {
                 if (!player.isAlive() || !wild.isAlive())
                     break;
                 wild.useMove(wild.randomMove(), player.onStagePokemon);
+                if (!player.isAlive() || !wild.isAlive())
+                    break;
+                player.onStagePokemon.roundEnd();
+                if (!player.isAlive() || !wild.isAlive())
+                    break;
+                wild.roundEnd();
             }
             else {
                 wild.useMove(wild.randomMove(), player.onStagePokemon);
@@ -41,7 +52,13 @@ public class WildBattle {
                     player.onStagePokemon.useMove(player.toUseMove, wild);
                     player.toUseMove = null;
                 }
+                wild.roundEnd();
+                if (!player.isAlive() || !wild.isAlive())
+                    break;
+                player.onStagePokemon.roundEnd();
             }
+
+
         }
 
         if (player.isAlive()) {

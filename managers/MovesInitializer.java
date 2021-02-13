@@ -6,8 +6,9 @@ import types.Type;
 import static types.Type.*;
 import static moves.MoveType.*;
 
-
 import java.util.HashMap;
+
+//初始化游戏中所有招式
 
 public class MovesInitializer {
     public static HashMap<String, Move> moves;

@@ -1,5 +1,7 @@
 package pokemon;
 
+//性格
+
 public enum Character {
     hardy,
     lonely,

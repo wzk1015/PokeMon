@@ -11,6 +11,8 @@ import java.util.Arrays;
 
 import static battles.PlayerDecision.*;
 
+//玩家
+
 public class Player {
     public String name;
     public ArrayList<Pokemon> pokemons;
@@ -20,16 +22,28 @@ public class Player {
     public Move toUseMove = null;
     public Item toUseItem = null;
     public Pokemon toExchangePokemon = null;
+    private PlayerDecision pd;
+
+    public Player(String name) {
+        pokemons = new ArrayList<>();
+        items = new ArrayList<>();
+        onStagePokemon = null;
+    }
+
+    public void setFirstPokemon(Pokemon p) {
+        pokemons.add(p);
+        onStagePokemon = p;
+    }
 
     public void resetBattleStatus() {
-        for (Pokemon p: pokemons) {
+        for (Pokemon p : pokemons) {
             Utils.assertion(p.isAlive(), "alive pokemon got reset battle status");
             p.substituteOff();
         }
     }
 
     public boolean isAlive() {
-        for (Pokemon p: pokemons) {
+        for (Pokemon p : pokemons) {
             if (p.isAlive()) {
                 return true;
             }
@@ -66,7 +80,7 @@ public class Player {
     }
 
     public boolean decideMove() {
-        for (Move move: onStagePokemon.moves) {
+        for (Move move : onStagePokemon.moves) {
             IO.println(move.fullInfo());
         }
         Move move = chooseFromProvided(onStagePokemon.moves);
@@ -90,7 +104,7 @@ public class Player {
     }
 
     public boolean decidePokemon() {
-        for (Pokemon p: pokemons) {
+        for (Pokemon p : pokemons) {
             IO.println(p.toString());
         }
         Pokemon p = chooseFromProvided(pokemons);
@@ -116,7 +130,7 @@ public class Player {
         return chooseFromProvided(options);
     }
 
-    public  <E> E chooseFromProvided(ArrayList<E> choices) {
+    public <E> E chooseFromProvided(ArrayList<E> choices) {
         if (choices.isEmpty()) {
             IO.println(this + " has nothing to choose");
             return null;
@@ -153,7 +167,7 @@ public class Player {
         return ans;
     }
 
-    public  <E> E chooseNoNull(ArrayList<E> choices) {
+    public <E> E chooseNoNull(ArrayList<E> choices) {
         E ans = null;
         do {
             ans = chooseFromProvided(choices);

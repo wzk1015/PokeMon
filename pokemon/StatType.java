@@ -1,7 +1,9 @@
 package pokemon;
 
+//能力种类
+
 public enum StatType {
-    HP,
+    maxHP,
     attack,
     spAttack,
     defense,

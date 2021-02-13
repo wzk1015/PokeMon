@@ -7,6 +7,8 @@ import types.Type;
 
 import java.util.ArrayList;
 
+//精灵种族
+
 public class PokemonSpecies {
     public int pokemonId;
     public String speciesName;

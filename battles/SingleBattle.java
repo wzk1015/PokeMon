@@ -1,12 +1,17 @@
 package battles;
 
-//对战
+//一对一对战
 
 import utils.IO;
 
 public class SingleBattle {
     public Player player1;
     public Player player2;
+
+    public SingleBattle(Player p1, Player p2) {
+        player1 = p1;
+        player2 = p2;
+    }
 
     public Player run() {
         while (player1.isAlive() && player2.isAlive()) {
@@ -44,6 +49,12 @@ public class SingleBattle {
                 second.onStagePokemon.useMove(second.toUseMove, first.onStagePokemon);
                 second.toUseMove = null;
             }
+            if (!first.isAlive() || !second.isAlive())
+                break;
+            first.onStagePokemon.roundEnd();
+            if (!first.isAlive() || !second.isAlive())
+                break;
+            second.onStagePokemon.roundEnd();
         }
         if (player1.isAlive()) {
             player1.resetBattleStatus();
