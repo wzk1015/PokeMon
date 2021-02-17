@@ -3,12 +3,16 @@ package pokemon;
 import battles.Player;
 import battles.Status;
 import moves.Move;
-import types.Type;
+import moves.MoveType;
 import types.TypeTable;
 import utils.IO;
 import utils.Utils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import static pokemon.StatType.*;
 
 //精灵个体
 
@@ -19,14 +23,18 @@ public class Pokemon extends PokemonSpecies {
     public int level;
     public int exp;
     public Stat individualStat;
-    public Stat effortStat = new Stat(0);;
-    public Stat stat;
+    public Stat effortStat = new Stat(0);
+
+    private Stat stat;
     public Player owner;
     public String name = speciesName;
 
     public int curHP;
     public Status status = Status.none;
-    public Stat battleStat = new Stat(1);
+    private Stat statModifier = new Stat(0);
+    private Stat battleStat = new Stat(1);
+    private int hitRateLevel = 0;
+    private int evadeRateLevel = 0;
     public boolean isInfatuated = false;
     public boolean isConfused = false;
     public boolean isFlinched = false;
@@ -57,11 +65,13 @@ public class Pokemon extends PokemonSpecies {
     }
 
     public void reset() {
-        for (Move move: moves) {
+        for (Move move : moves) {
             move.curPP = move.maxPP;
         }
         status = Status.none;
         curHP = (int) stat.maxHP;
+        hitRateLevel = 0;
+        evadeRateLevel = 0;
         substituteOff();
     }
 
@@ -69,6 +79,34 @@ public class Pokemon extends PokemonSpecies {
         isInfatuated = false;
         isConfused = false;
         isFlinched = false;
+        battleStat = new Stat(1);
+        statModifier = new Stat(0);
+    }
+
+    private void useAttackMove(Move move, Pokemon enemy) {
+        double ratio = TypeTable.ratio(move.type, enemy.type1);
+        if (enemy.type2 != null) {
+            // 属性相克
+            ratio *= TypeTable.ratio(move.type, enemy.type2);
+        }
+        if (type1 == move.type || type2 == move.type) {
+            // 属性一致加成
+            ratio *= 1.5;
+        }
+        //TODO: 其他加成
+        ratio *= Utils.randdouble(0.85, 1.00);
+
+        Utils.assertion(move.moveType == MoveType.physical || move.moveType == MoveType.special,
+                "invalid movetype in useAttackMove");
+        double damage = (2 * level + 10) / 250.0 * move.power;
+        if (move.moveType == MoveType.physical) {
+            damage = damage * stat.attack / enemy.stat.defense + 2;
+        } else {
+            damage = damage * stat.spAttack / enemy.stat.spDefense + 2;
+        }
+        damage *= ratio;
+        enemy.loseHP(Math.min((int) damage, 1), this);
+        move.sideEffect();
     }
 
     public void useMove(Move move, Pokemon enemy) {
@@ -96,8 +134,7 @@ public class Pokemon extends PokemonSpecies {
                 IO.println(name, "因麻痹而无法行动");
                 return;
             }
-        }
-        else if (status == Status.freezing) {
+        } else if (status == Status.freezing) {
             if (Utils.random() < 0.8) {
                 IO.println(name, "被冻住无法行动");
                 return;
@@ -105,8 +142,7 @@ public class Pokemon extends PokemonSpecies {
                 IO.println(name, "冰冻解除了");
                 status = Status.none;
             }
-        }
-        else if (status == Status.sleeping) {
+        } else if (status == Status.sleeping) {
             leftSleepRound -= 1;
             if (leftSleepRound == 0) {
                 IO.println(name, "睡醒了");
@@ -119,33 +155,42 @@ public class Pokemon extends PokemonSpecies {
 
         assert Utils.contains(moves, move);
         IO.println(name, "使用了", move.name);
-        if (move.power > 0) {
-            if (Utils.random() < move.hitRate) {
-                IO.println("命中");
-                double ratio = TypeTable.ratio(move.type, enemy.type1);
-                if (enemy.type2 != null)
-                    ratio *= TypeTable.ratio(move.type, enemy.type2);
-                if (type1 == move.type || type2 == move.type) {
-                    ratio *= 1.5;
-                }
-                //TODO: 计算威力
-                enemy.loseHP(1, this);
-                move.sideEffect();
-            } else {
-                IO.println(move.name, "没有命中对方");
-            }
+        move.curPP -= 1;
+        Utils.assertion(move.curPP >= 0, move + "pp < 0");
 
-            move.curPP -= 1;
-            Utils.assertion(move.curPP >= 0, move + "pp < 0");
+
+        int levelDiff = this.hitRateLevel - enemy.evadeRateLevel;
+        double hitTarget = levelDiff == -6 ? 0.33 :
+                levelDiff == -5 ? 0.36 :
+                levelDiff == -4 ? 0.43 :
+                levelDiff == -3 ? 0.50 :
+                levelDiff == -2 ? 0.60 :
+                levelDiff == -1 ? 0.75 :
+                levelDiff == 0 ? 1.00 :
+                levelDiff == 1 ? 1.33 :
+                levelDiff == 2 ? 1.66 :
+                levelDiff == 3 ? 2.00 :
+                levelDiff == 4 ? 2.33 :
+                levelDiff == 5 ? 2.50 : 3.00;
+        hitTarget *= move.hitRate;
+        //TODO: 道具修正、特性天气修正
+
+        if (Utils.random() < hitTarget) {
+            IO.println("命中");
+            if (move.power > 0) {
+                useAttackMove(move, enemy);
+            } else {
+                move.noneAttackMoveUse();
+            }
+        } else {
+            IO.println(move.name, "没有命中");
         }
-        else {
-            move.noneAttackMoveUse();
-        }
+
     }
 
     public Move randomMove() {
         ArrayList<Move> ms = new ArrayList<>();
-        for (Move m: moves) {
+        for (Move m : moves) {
             if (m.curPP > 0) {
                 ms.add(m);
             }
@@ -159,11 +204,9 @@ public class Pokemon extends PokemonSpecies {
         }
         if (status == Status.burning) {
             battleStat.attack *= 2;
-        }
-        else if (status == Status.paralyzing) {
+        } else if (status == Status.paralyzing) {
             battleStat.speed *= 2;
-        }
-        else if (st == Status.sleeping) {
+        } else if (st == Status.sleeping) {
             leftSleepRound = 0;
         }
 
@@ -171,28 +214,103 @@ public class Pokemon extends PokemonSpecies {
 
         if (st == Status.burning) {
             battleStat.attack *= 0.5;
-        }
-        else if (st == Status.paralyzing) {
+        } else if (st == Status.paralyzing) {
             battleStat.speed *= 0.5;
-        }
-        else if (st == Status.sleeping) {
+        } else if (st == Status.sleeping) {
             leftSleepRound = Utils.randint(2, 5);
         }
-    }
-
-    public double getStat(StatType st) {
-        if (st == StatType.maxHP) {
-            return stat.maxHP;
-        }
-        return stat.getByEnum(st) * battleStat.getByEnum(st);
     }
 
     public void roundEnd() {
         if (status == Status.poisoning) {
             curHP -= stat.maxHP / 8;
-        }
-        else if (status == Status.burning) {
+        } else if (status == Status.burning) {
             curHP -= stat.maxHP / 16;
         }
     }
+
+    public void levelUp() {
+        level++;
+        Stat old = new Stat(stat);
+        stat.maxHP = (speciesStat.maxHP * 2 + individualStat.maxHP + effortStat.maxHP / 4) * level / 100 + 10 + level;
+        List<StatType> statTypes = Arrays.asList(attack, defense, spAttack, spDefense, speed);
+        for (StatType statType : statTypes) {
+            double value = (speciesStat.get(statType) * 2 + individualStat.get(statType) +
+                    effortStat.get(statType) / 4) * level / 100 + 5;
+            value *= CharacterTable.characterRefine(character, statType);
+            stat.set(statType, value);
+        }
+
+        statTypes.add(maxHP);
+        for (StatType statType : statTypes) {
+            int delta = (int) (stat.get(statType) - old.get(statType));
+            IO.println(statType, "change by", delta > 0 ? "+" : "", delta, "to", stat.get(statType));
+        }
+    }
+
+    public void statModifierChange(StatType s, int level) {
+        Utils.assertion(s != maxHP, "change modifier of maxHP");
+        int curLevel = s == hitRate ? hitRateLevel : s == evadeRate ? evadeRateLevel : (int) statModifier.get(s);
+        Utils.assertion(curLevel >= -6 && curLevel <= 6, "invalid modifier level" + curLevel);
+        int targetLevel = curLevel + level;
+        targetLevel = targetLevel > 6 ? 6 : Math.max(targetLevel, -6);
+        if (s == hitRate) {
+            hitRateLevel = targetLevel;
+        } else if (s == evadeRate) {
+            evadeRateLevel = targetLevel;
+        } else {
+            statModifier.set(s, targetLevel);
+        }
+    }
+
+    public double getBattleStat(StatType s) {
+        if (s == StatType.maxHP) {
+            return stat.maxHP;
+        }
+        if (s == hitRate) {
+            return hitRateLevel;
+        }
+        if (s == evadeRate) {
+            return evadeRateLevel;
+        }
+        switch ((int) statModifier.get(s)) {
+            case -6:
+                return stat.get(s) * battleStat.get(s) * 0.25;
+            case -5:
+                return stat.get(s) * battleStat.get(s) * 0.29;
+            case -4:
+                return stat.get(s) * battleStat.get(s) * 0.33;
+            case -3:
+                return stat.get(s) * battleStat.get(s) * 0.40;
+            case -2:
+                return stat.get(s) * battleStat.get(s) * 0.50;
+            case -1:
+                return stat.get(s) * battleStat.get(s) * 0.67;
+            case 0:
+                return stat.get(s) * battleStat.get(s) * 1.00;
+            case 1:
+                return stat.get(s) * battleStat.get(s) * 1.50;
+            case 2:
+                return stat.get(s) * battleStat.get(s) * 2.00;
+            case 3:
+                return stat.get(s) * battleStat.get(s) * 2.50;
+            case 4:
+                return stat.get(s) * battleStat.get(s) * 3.00;
+            case 5:
+                return stat.get(s) * battleStat.get(s) * 3.50;
+            case 6:
+                return stat.get(s) * battleStat.get(s) * 4.00;
+            default:
+                Utils.raise("invalid modifier level" + (int) statModifier.get(s));
+                return -1;
+        }
+    }
 }
+
+
+
+
+
+
+
+

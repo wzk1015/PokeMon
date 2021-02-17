@@ -44,6 +44,10 @@ public class Utils {
         return random.nextInt(max - min + 1) + min;
     }
 
+    public static double randdouble(double min, double max) {
+        return min + random() * (max - min);
+    }
+
     public static <E> E choice(ArrayList<E> choices) {
         Random random = new Random();
         return choices.get(randint(0, choices.size() - 1));

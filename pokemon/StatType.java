@@ -8,5 +8,7 @@ public enum StatType {
     spAttack,
     defense,
     spDefense,
-    speed
+    speed,
+    hitRate,
+    evadeRate
 }

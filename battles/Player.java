@@ -8,6 +8,7 @@ import utils.Utils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import static battles.PlayerDecision.*;
 
@@ -38,7 +39,7 @@ public class Player {
     public void resetBattleStatus() {
         for (Pokemon p : pokemons) {
             Utils.assertion(p.isAlive(), "alive pokemon got reset battle status");
-            p.substituteOff();
+            p.reset();
         }
     }
 
@@ -80,10 +81,14 @@ public class Player {
     }
 
     public boolean decideMove() {
+        ArrayList<Move> moves = new ArrayList<>();
         for (Move move : onStagePokemon.moves) {
             IO.println(move.fullInfo());
+            if (move.curPP > 0) {
+                moves.add(move);
+            }
         }
-        Move move = chooseFromProvided(onStagePokemon.moves);
+        Move move = chooseFromProvided(moves);
         if (move == null) {
             return false;
         }
@@ -130,7 +135,7 @@ public class Player {
         return chooseFromProvided(options);
     }
 
-    public <E> E chooseFromProvided(ArrayList<E> choices) {
+    public <E> E chooseFromProvided(List<E> choices) {
         if (choices.isEmpty()) {
             IO.println(this + " has nothing to choose");
             return null;
@@ -160,14 +165,10 @@ public class Player {
 
     @SafeVarargs
     public final <E> E chooseNoNull(E... choices) {
-        E ans = null;
-        do {
-            ans = chooseFromProvided(choices);
-        } while (ans == null);
-        return ans;
+        return chooseNoNull(Arrays.asList(choices));
     }
 
-    public <E> E chooseNoNull(ArrayList<E> choices) {
+    public <E> E chooseNoNull(List<E> choices) {
         E ans = null;
         do {
             ans = chooseFromProvided(choices);

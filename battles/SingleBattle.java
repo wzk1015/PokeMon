@@ -2,6 +2,7 @@ package battles;
 
 //一对一对战
 
+import pokemon.StatType;
 import utils.IO;
 
 public class SingleBattle {
@@ -15,7 +16,8 @@ public class SingleBattle {
 
     public Player run() {
         while (player1.isAlive() && player2.isAlive()) {
-            Player first = player1.onStagePokemon.stat.speed >= player2.onStagePokemon.stat.speed ?
+            Player first = player1.onStagePokemon.getBattleStat(StatType.speed) >=
+                    player2.onStagePokemon.getBattleStat(StatType.speed) ?
                     player1 : player2;
             Player second = first == player1 ? player2 : player1;
 

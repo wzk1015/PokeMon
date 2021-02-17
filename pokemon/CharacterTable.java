@@ -1,8 +1,6 @@
 package pokemon;
 
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 
 import static pokemon.Character.*;
 import static pokemon.StatType.*;
@@ -79,4 +77,14 @@ public class CharacterTable {
             put(naive, spDefense);
         }
     };
+
+    public static double characterRefine(Character c, StatType s) {
+        if (s == add.get(c)) {
+            return 1.1;
+        }
+        else if (s == sub.get(c)) {
+            return 0.9;
+        }
+        return 1.0;
+    }
 }

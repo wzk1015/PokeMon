@@ -3,6 +3,7 @@ package battles;
 //野生精灵对战
 
 import pokemon.Pokemon;
+import pokemon.StatType;
 
 public class WildBattle {
     public Player player;
@@ -29,7 +30,7 @@ public class WildBattle {
                 break;
             }
 
-            if (player.onStagePokemon.stat.speed >= wild.stat.speed) {
+            if (player.onStagePokemon.getBattleStat(StatType.speed) >= wild.getBattleStat(StatType.speed)) {
                 if (pd == PlayerDecision.useMove) {
                     player.onStagePokemon.useMove(player.toUseMove, wild);
                     player.toUseMove = null;
