@@ -8,6 +8,7 @@ import utils.IO;
 public class SingleBattle {
     public Player player1;
     public Player player2;
+    public int round = 1;
 
     public SingleBattle(Player p1, Player p2) {
         player1 = p1;
@@ -15,7 +16,11 @@ public class SingleBattle {
     }
 
     public Player run() {
+        IO.println("对战开始");
         while (player1.isAlive() && player2.isAlive()) {
+            IO.println("第", round, "轮");
+            IO.println(player1.onStagePokemon.fullInfo());
+            IO.println(player2.onStagePokemon.fullInfo());
             Player first = player1.onStagePokemon.getBattleStat(StatType.speed) >=
                     player2.onStagePokemon.getBattleStat(StatType.speed) ?
                     player1 : player2;
@@ -57,6 +62,7 @@ public class SingleBattle {
             if (!first.isAlive() || !second.isAlive())
                 break;
             second.onStagePokemon.roundEnd();
+            round++;
         }
         if (player1.isAlive()) {
             player1.resetBattleStatus();

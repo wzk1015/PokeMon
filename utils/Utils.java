@@ -18,7 +18,7 @@ public class Utils {
 
     public static void assertion(boolean statement, String msg) {
         if (!statement) {
-            raise("Assertion failed" + msg);
+            raise("Assertion failed: " + msg);
         }
     }
 

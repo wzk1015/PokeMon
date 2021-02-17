@@ -34,6 +34,16 @@ public class Stat {
         this(other.maxHP, other.attack, other.spAttack, other.defense, other.spDefense, other.speed);
     }
 
+    public Stat() {
+        //随机生成
+        this.maxHP = Utils.randint(0, 31);
+        this.attack = Utils.randint(0, 31);
+        this.spAttack = Utils.randint(0, 31);
+        this.defense = Utils.randint(0, 31);
+        this.spDefense = Utils.randint(0, 31);
+        this.speed = Utils.randint(0, 31);
+    }
+
     public double get(StatType type) {
         switch (type) {
             case maxHP: return maxHP;

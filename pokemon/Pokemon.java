@@ -4,6 +4,7 @@ import battles.Player;
 import battles.Status;
 import moves.Move;
 import moves.MoveType;
+import types.Type;
 import types.TypeTable;
 import utils.IO;
 import utils.Utils;
@@ -19,14 +20,14 @@ import static pokemon.StatType.*;
 public class Pokemon extends PokemonSpecies {
     public Gender gender;
     public Character character;
-    public int friendShip;
+    public int friendShip = 0;
     public int level;
     public int exp;
-    public Stat individualStat;
+    public Stat individualStat = new Stat();
     public Stat effortStat = new Stat(0);
 
-    private Stat stat;
-    public Player owner;
+    private final Stat stat;
+    public Player owner = null;
     public String name = speciesName;
 
     public int curHP;
@@ -41,12 +42,29 @@ public class Pokemon extends PokemonSpecies {
     public boolean isCaptured = false;
     public int leftSleepRound = 0;
 
+    public Pokemon(String name, int id, Type type, ArrayList<Move> moves) {
+        this.speciesName = name;
+        this.name = name;
+        this.pokemonId = id;
+        this.type1 = type;
+        this.moves = moves;
+
+        this.gender = Gender.male;
+        this.character = Character.hardy;
+        this.level = 100;
+        this.exp = 0;
+
+        this.stat = new Stat(100);
+        this.curHP = (int) stat.maxHP;
+    }
+
     public boolean isAlive() {
         return curHP > 0;
     }
 
     public void loseHP(int hp, Pokemon attacker) {
         Utils.assertion(hp > 0, "lose hp <= 0");
+        IO.println(name, " lose ", hp, "HP");
         curHP = Math.max(curHP - hp, 0);
         if (curHP == 0) {
             die();
@@ -55,13 +73,15 @@ public class Pokemon extends PokemonSpecies {
 
     public void die() {
         IO.println(name, " is dead");
-        owner.decidePokemon();
-        while (owner.toExchangePokemon == null) {
+        if (owner.isAlive()) {
             owner.decidePokemon();
+            while (owner.toExchangePokemon == null) {
+                owner.decidePokemon();
+            }
+            owner.onStagePokemon = owner.toExchangePokemon;
+            owner.toExchangePokemon = null;
+            substituteOff();
         }
-        owner.onStagePokemon = owner.toExchangePokemon;
-        owner.toExchangePokemon = null;
-        substituteOff();
     }
 
     public void reset() {
@@ -100,12 +120,13 @@ public class Pokemon extends PokemonSpecies {
                 "invalid movetype in useAttackMove");
         double damage = (2 * level + 10) / 250.0 * move.power;
         if (move.moveType == MoveType.physical) {
-            damage = damage * stat.attack / enemy.stat.defense + 2;
+            damage = damage * getBattleStat(attack) / enemy.getBattleStat(defense) + 2;
         } else {
-            damage = damage * stat.spAttack / enemy.stat.spDefense + 2;
+            damage = damage * getBattleStat(spAttack) / enemy.getBattleStat(spDefense) + 2;
         }
         damage *= ratio;
-        enemy.loseHP(Math.min((int) damage, 1), this);
+        damage = Math.max(damage, 1);
+        enemy.loseHP((int) damage, this);
         move.sideEffect();
     }
 
@@ -230,6 +251,9 @@ public class Pokemon extends PokemonSpecies {
     }
 
     public void levelUp() {
+        if (level == 100) {
+            return;
+        }
         level++;
         Stat old = new Stat(stat);
         stat.maxHP = (speciesStat.maxHP * 2 + individualStat.maxHP + effortStat.maxHP / 4) * level / 100 + 10 + level;
@@ -304,6 +328,14 @@ public class Pokemon extends PokemonSpecies {
                 Utils.raise("invalid modifier level" + (int) statModifier.get(s));
                 return -1;
         }
+    }
+
+    public String fullInfo() {
+        String ret = "---------------\n";
+        ret += name + "Lv." + level + " HP: " + curHP + "/" + (int) stat.maxHP + "\n";
+        if (status != Status.none)
+            ret += status + "\n";
+        return ret;
     }
 }
 

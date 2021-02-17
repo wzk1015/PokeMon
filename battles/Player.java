@@ -1,6 +1,7 @@
 package battles;
 
 import items.Item;
+import managers.PokemonInitializer;
 import moves.Move;
 import pokemon.Pokemon;
 import utils.IO;
@@ -26,19 +27,25 @@ public class Player {
     private PlayerDecision pd;
 
     public Player(String name) {
+        this.name = name;
         pokemons = new ArrayList<>();
         items = new ArrayList<>();
         onStagePokemon = null;
     }
 
-    public void setFirstPokemon(Pokemon p) {
-        pokemons.add(p);
-        onStagePokemon = p;
+    public Player(String name, String firstPokemon) {
+        this(name);
+        setFirstPokemon(firstPokemon);
+    }
+
+    public void setFirstPokemon(String p) {
+        onStagePokemon = PokemonInitializer.pokemons.get(p);
+        pokemons.add(onStagePokemon);
+        onStagePokemon.owner = this;
     }
 
     public void resetBattleStatus() {
         for (Pokemon p : pokemons) {
-            Utils.assertion(p.isAlive(), "alive pokemon got reset battle status");
             p.reset();
         }
     }

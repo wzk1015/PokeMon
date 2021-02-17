@@ -18,8 +18,11 @@ public class IO {
 
     public static void print(Object... s) {
         for (int i = 0; i < s.length; i++) {
-            if (i > 0)
-                System.out.print(" ");
+//            if (i > 0)
+//                System.out.print(" ");
+//            if (s[i] instanceof String)
+//                System.out.print(s[i]);
+//            else
             System.out.print(s[i].toString());
         }
     }
