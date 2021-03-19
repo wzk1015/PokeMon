@@ -104,6 +104,9 @@ public class Pokemon extends PokemonSpecies {
     }
 
     private void useAttackMove(Move move, Pokemon enemy) {
+        Utils.assertion(move.moveType == MoveType.physical || move.moveType == MoveType.special,
+                "invalid movetype in useAttackMove");
+
         double ratio = TypeTable.ratio(move.type, enemy.type1);
         if (enemy.type2 != null) {
             // 属性相克
@@ -114,20 +117,21 @@ public class Pokemon extends PokemonSpecies {
             ratio *= 1.5;
         }
         //TODO: 其他加成
-        ratio *= Utils.randdouble(0.85, 1.00);
 
-        Utils.assertion(move.moveType == MoveType.physical || move.moveType == MoveType.special,
-                "invalid movetype in useAttackMove");
-        double damage = (2 * level + 10) / 250.0 * move.power;
-        if (move.moveType == MoveType.physical) {
-            damage = damage * getBattleStat(attack) / enemy.getBattleStat(defense) + 2;
-        } else {
-            damage = damage * getBattleStat(spAttack) / enemy.getBattleStat(spDefense) + 2;
+        int times = Utils.randint(move.minAttackTimes, move.maxAttackTimes);
+
+        for (int i = 0; i < times; i++) {
+            double damage = (2 * level + 10) / 250.0 * move.power;
+            if (move.moveType == MoveType.physical) {
+                damage = damage * getBattleStat(attack) / enemy.getBattleStat(defense) + 2;
+            } else {
+                damage = damage * getBattleStat(spAttack) / enemy.getBattleStat(spDefense) + 2;
+            }
+            damage *= ratio * Utils.randdouble(0.85, 1.00);
+            damage = Math.max(damage, 1);
+            enemy.loseHP((int) damage, this);
+            move.sideEffect(this, enemy);
         }
-        damage *= ratio;
-        damage = Math.max(damage, 1);
-        enemy.loseHP((int) damage, this);
-        move.sideEffect();
     }
 
     public void useMove(Move move, Pokemon enemy) {
@@ -183,16 +187,16 @@ public class Pokemon extends PokemonSpecies {
         int levelDiff = this.hitRateLevel - enemy.evadeRateLevel;
         double hitTarget = levelDiff == -6 ? 0.33 :
                 levelDiff == -5 ? 0.36 :
-                levelDiff == -4 ? 0.43 :
-                levelDiff == -3 ? 0.50 :
-                levelDiff == -2 ? 0.60 :
-                levelDiff == -1 ? 0.75 :
-                levelDiff == 0 ? 1.00 :
-                levelDiff == 1 ? 1.33 :
-                levelDiff == 2 ? 1.66 :
-                levelDiff == 3 ? 2.00 :
-                levelDiff == 4 ? 2.33 :
-                levelDiff == 5 ? 2.50 : 3.00;
+                        levelDiff == -4 ? 0.43 :
+                                levelDiff == -3 ? 0.50 :
+                                        levelDiff == -2 ? 0.60 :
+                                                levelDiff == -1 ? 0.75 :
+                                                        levelDiff == 0 ? 1.00 :
+                                                                levelDiff == 1 ? 1.33 :
+                                                                        levelDiff == 2 ? 1.66 :
+                                                                                levelDiff == 3 ? 2.00 :
+                                                                                        levelDiff == 4 ? 2.33 :
+                                                                                                levelDiff == 5 ? 2.50 : 3.00;
         hitTarget *= move.hitRate;
         //TODO: 道具修正、特性天气修正
 
@@ -201,7 +205,7 @@ public class Pokemon extends PokemonSpecies {
             if (move.power > 0) {
                 useAttackMove(move, enemy);
             } else {
-                move.noneAttackMoveUse();
+                move.noneAttackMoveUse(this, enemy);
             }
         } else {
             IO.println(move.name, "没有命中");
@@ -223,6 +227,28 @@ public class Pokemon extends PokemonSpecies {
         if (st == status) {
             return;
         }
+
+        switch (status) {
+            case burning:
+                IO.println(this, "被烧伤了");
+                break;
+            case freezing:
+                IO.println(this, "被冰冻了");
+                break;
+            case paralyzing:
+                IO.println(this, "被麻痹了");
+                break;
+            case poisoning:
+                IO.println(this, "中毒了");
+                break;
+            case sleeping:
+                IO.println(this, "睡着了");
+                break;
+            case none:
+                IO.println(this, "异常状态解除了");
+                break;
+        }
+
         if (status == Status.burning) {
             battleStat.attack *= 2;
         } else if (status == Status.paralyzing) {
@@ -248,6 +274,7 @@ public class Pokemon extends PokemonSpecies {
         } else if (status == Status.burning) {
             curHP -= stat.maxHP / 16;
         }
+        isFlinched = false;
     }
 
     public void levelUp() {
@@ -278,6 +305,7 @@ public class Pokemon extends PokemonSpecies {
         Utils.assertion(curLevel >= -6 && curLevel <= 6, "invalid modifier level" + curLevel);
         int targetLevel = curLevel + level;
         targetLevel = targetLevel > 6 ? 6 : Math.max(targetLevel, -6);
+        IO.println(this, s, "改变了", level, "级");
         if (s == hitRate) {
             hitRateLevel = targetLevel;
         } else if (s == evadeRate) {

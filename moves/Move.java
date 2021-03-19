@@ -1,9 +1,8 @@
 package moves;
 
+import moves.sideeffects.SideEffect;
 import pokemon.Pokemon;
 import types.Type;
-import types.TypeTable;
-import utils.IO;
 import utils.Utils;
 
 //技能
@@ -17,8 +16,15 @@ public class Move {
     public int maxPP;
     public double hitRate;
     public int curPP;
+    public int minAttackTimes = 1;
+    public int maxAttackTimes = 1;
+    public SideEffect sideEffect;
 
     public Move(String name, int power, Type type, MoveType moveType, int pp, double hitRate) {
+        this(name, power, type, moveType, pp, hitRate, null);
+    }
+
+    public Move(String name, int power, Type type, MoveType moveType, int pp, double hitRate, SideEffect sideEffect) {
         this.name = name;
         this.power = power;
         this.type = type;
@@ -26,6 +32,7 @@ public class Move {
         this.maxPP = pp;
         this.curPP = pp;
         this.hitRate = hitRate;
+        this.sideEffect = sideEffect;
     }
 
     @Override
@@ -37,11 +44,21 @@ public class Move {
         return name + " " + power + " " + type + " " + moveType + " " + hitRate + " " + curPP + "/" + maxPP;
     }
 
-    public void noneAttackMoveUse() {
+    public void noneAttackMoveUse(Pokemon user, Pokemon enemy) {
         Utils.raise("none attack move not implemented");
     }
 
-    public void sideEffect() {
+    public void sideEffect(Pokemon user, Pokemon enemy) {
+        if (sideEffect == null) {
+            return;
+        }
+        sideEffect.use(user, enemy);
+    }
 
+    public void missEffect(Pokemon user) {
+    }
+
+    public boolean canUse() {
+        return true;
     }
 }

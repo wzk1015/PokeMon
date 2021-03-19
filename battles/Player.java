@@ -91,7 +91,7 @@ public class Player {
         ArrayList<Move> moves = new ArrayList<>();
         for (Move move : onStagePokemon.moves) {
             IO.println(move.fullInfo());
-            if (move.curPP > 0) {
+            if (move.curPP > 0 && move.canUse()) {
                 moves.add(move);
             }
         }
