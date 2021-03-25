@@ -36,6 +36,13 @@ public class MovesInitializer {
         moves.put(name, new Move(name, power, type, moveType, pp, hitRate / 100.0, new StatusEffect(prob, status)));
     }
 
+    public static void add(String name, Type type, MoveType moveType, int power, int hitRate, int pp, int minTimes, int maxTimes, double prob, Status status) {
+        Move move = new Move(name, power, type, moveType, pp, hitRate / 100.0, new StatusEffect(prob, status));
+        move.minAttackTimes = minTimes;
+        move.maxAttackTimes = maxTimes;
+        moves.put(name, move);
+    }
+
     public static void addSCM(String name, Type type, int pp, int raiseLevel, StatType statType, boolean useToSelf) {
         moves.put(name, new StatChangeMove(name, type, pp, raiseLevel, statType, useToSelf));
     }
@@ -87,6 +94,17 @@ public class MovesInitializer {
         add("泰山压顶", normal, physical, 85, 100, 15, 0.3, paralyzing);
         //TODO:紧束
 
+        //TODO:猛撞
+        //TODO:大闹一番
+        //TODO:舍身冲撞
+        addSCM("摇尾巴", normal, 30, -1, defense, false);
+        add("毒针", poison, physical, 15, 100, 35, 0.3, poisoning);
+
+        add("双针", bug, physical, 25, 100, 20, 2, 2, 0.2, poisoning);
+        add("飞弹针", bug, physical, 25, 95, 20, 2, 5);
+        addSCM("瞪眼", normal, 30, -1, defense, false);
+        addFlinch("咬住", dark, physical, 60, 100, 25, 0.3);
+        addSCM("叫声", normal, 40, -1, attack, false);
 
     }
 
